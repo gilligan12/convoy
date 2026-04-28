@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/api/foursquare/:path*", "destination": "/api/foursquare" },
+    { "source": "/api/claude/:path*", "destination": "/api/claude" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

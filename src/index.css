@@ -1,0 +1,233 @@
+@import "tailwindcss";
+
+:root {
+  --cream:     #F5EFE0;
+  --ink:       #1a2b20;
+  --green:     #1C3829;
+  --green-mid: #2a5240;
+  --sage:      #4A6356;
+  --muted:     #7A8F82;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--cream);
+}
+
+/* ─────────────────────────────── Typography ── */
+
+.eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(28, 56, 41, 0.42);
+}
+
+.hero-headline {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(3.8rem, 5.8vw, 7rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+.hero-headline-italic {
+  font-style: italic;
+  background: linear-gradient(118deg, #1C3829 0%, #2d6b47 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─────────────────────────────── Buttons ── */
+
+.btn-primary {
+  background: var(--green);
+  color: var(--cream);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.btn-primary:hover {
+  background: var(--green-mid);
+  transform: scale(1.03);
+  box-shadow: 0 8px 32px rgba(28, 56, 41, 0.30);
+}
+
+/* ─────────────────────────────── Card float ── */
+
+@keyframes card-float-1 {
+  0%, 100% { transform: translateY(0)     rotate(-3deg); }
+  50%       { transform: translateY(-16px) rotate(-3deg); }
+}
+@keyframes card-float-2 {
+  0%, 100% { transform: translateY(0)     rotate(2deg); }
+  50%       { transform: translateY(-12px) rotate(2deg); }
+}
+@keyframes card-float-3 {
+  0%, 100% { transform: translateY(0)     rotate(-1.5deg); }
+  50%       { transform: translateY(-20px) rotate(-1.5deg); }
+}
+.card-float-1 { animation: card-float-1  7s ease-in-out infinite; }
+.card-float-2 { animation: card-float-2  9s ease-in-out infinite 0.8s; }
+.card-float-3 { animation: card-float-3 11s ease-in-out infinite 1.6s; }
+
+/* ─────────────────────────────── Entrance ── */
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up   { animation: fade-up 1s cubic-bezier(.16,1,.3,1) both; }
+.fade-up-1 { animation: fade-up 1s cubic-bezier(.16,1,.3,1) 0.10s both; }
+.fade-up-2 { animation: fade-up 1s cubic-bezier(.16,1,.3,1) 0.25s both; }
+.fade-up-3 { animation: fade-up 1s cubic-bezier(.16,1,.3,1) 0.40s both; }
+.fade-up-4 { animation: fade-up 1s cubic-bezier(.16,1,.3,1) 0.55s both; }
+.fade-up-5 { animation: fade-up 1s cubic-bezier(.16,1,.3,1) 0.70s both; }
+
+/* ─────────────────────────────── Photo treatment ── */
+
+.vintage {
+  filter: sepia(38%) contrast(1.08) brightness(0.87) saturate(0.72);
+  transition: filter 0.6s ease;
+}
+.vintage:hover {
+  filter: sepia(18%) contrast(1.05) brightness(0.94) saturate(0.85);
+}
+
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 10;
+  border-radius: inherit;
+}
+
+.vignette::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%);
+  pointer-events: none;
+  z-index: 2;
+  border-radius: inherit;
+}
+
+/* ─────────────────────────────── Photo card (grid hover) ── */
+
+.photo-card {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.photo-card img {
+  transition: transform 0.9s cubic-bezier(.16,1,.3,1), filter 0.6s ease;
+}
+.photo-card:hover img {
+  transform: scale(1.06);
+  filter: sepia(18%) contrast(1.05) brightness(0.94) saturate(0.85);
+}
+
+/* ─────────────────────────────── Destination ticker ── */
+
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker 38s linear infinite;
+}
+.ticker-track:hover { animation-play-state: paused; }
+
+/* ─────────────────────────────── Scroll indicator ── */
+
+@keyframes scroll-drop {
+  0%   { height: 0;    opacity: 0; transform: translateY(0); }
+  25%  { opacity: 1; }
+  70%  { height: 32px; opacity: 1; transform: translateY(0); }
+  100% { height: 32px; opacity: 0; transform: translateY(10px); }
+}
+.scroll-line {
+  width: 1px;
+  height: 0;
+  background: rgba(28, 56, 41, 0.25);
+  animation: scroll-drop 2.8s ease-in-out infinite;
+}
+
+/* ── Timeline scroll ── */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
+}
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: rgba(28, 56, 41, 0.12);
+  border-radius: 3px;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(28, 56, 41, 0.25);
+}
+
+/* ─────────────────────────────── Film strip ── */
+
+@keyframes film-roll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.film-roll {
+  display: flex;
+  width: max-content;
+  animation: film-roll 44s linear infinite;
+}
+.film-roll:hover { animation-play-state: paused; }
+
+.film-perfs {
+  height: 18px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent             0px,
+    transparent            10px,
+    rgba(245,239,224,0.12) 10px,
+    rgba(245,239,224,0.12) 24px,
+    transparent            24px,
+    transparent            34px
+  );
+}
+
+/* ─────────────────────────────── Divider ── */
+
+.divider-green {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(28,56,41,0.18), transparent);
+}
+
+/* ─────────────────────────────── Features ── */
+
+.feature-row {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 26px 0;
+  border-bottom: 1px solid rgba(28,56,41,0.07);
+}
+.feature-row:last-child { border-bottom: none; }
+
+.feature-num {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: 400;
+  line-height: 1;
+  color: rgba(28,56,41,0.15);
+  padding-top: 2px;
+  letter-spacing: -0.02em;
+}
