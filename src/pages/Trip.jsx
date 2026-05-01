@@ -3468,6 +3468,156 @@ function AddItemModal({ open, onClose, onCreated, tripId, userId, defaultDate, n
 }
 
 /* ── Itinerary Item Card ── */
+/* ── Trip Documents Modal ── */
+function TripDocsModal({ open, onClose, tripId, userId, docs, onChanged }) {
+  const [file, setFile] = useState(null)
+  const [title, setTitle] = useState('')
+  const [docType, setDocType] = useState('booking')
+  const [notes, setNotes] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
+  const fileRef = useRef(null)
+
+  const tripDocTypes = [
+    { value: 'booking', label: 'Booking' },
+    { value: 'insurance', label: 'Insurance' },
+    { value: 'visa', label: 'Visa' },
+    { value: 'itinerary', label: 'Itinerary' },
+    { value: 'receipt', label: 'Receipt' },
+    { value: 'other', label: 'Other' },
+  ]
+
+  async function handleUpload(e) {
+    e.preventDefault()
+    if (!file) { setError('Select a file'); return }
+    setError('')
+    setUploading(true)
+
+    const ext = file.name.split('.').pop()
+    const path = `${userId}/trips/${tripId}/${Date.now()}.${ext}`
+
+    const { error: upErr } = await supabase.storage.from('documents').upload(path, file)
+    if (upErr) { setError(upErr.message); setUploading(false); return }
+
+    const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(path)
+
+    const { error: dbErr } = await supabase.from('trip_documents').insert({
+      trip_id: tripId,
+      uploaded_by: userId,
+      doc_type: docType,
+      title: title || file.name,
+      file_url: publicUrl,
+      file_name: file.name,
+      file_type: file.type,
+      file_size: file.size,
+      notes: notes || null,
+    })
+
+    if (dbErr) { setError(dbErr.message) }
+    else {
+      setFile(null)
+      setTitle('')
+      setNotes('')
+      setDocType('booking')
+      onChanged()
+    }
+    setUploading(false)
+  }
+
+  async function handleDelete(docId) {
+    if (!window.confirm('Delete this document?')) return
+    await supabase.from('trip_documents').delete().eq('id', docId)
+    onChanged()
+  }
+
+  if (!open) return null
+
+  const inputClass = 'w-full border border-[#1C3829]/15 rounded-xl px-4 py-3 text-sm bg-[#F5EFE0]/50 focus:outline-none focus:ring-2 focus:ring-[#1C3829]/30 focus:border-transparent'
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-[#1C3829]/10 overflow-hidden max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-[#1C3829]/8 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-[#1a2b20]" style={{ fontFamily: "'Playfair Display', serif" }}>Trip Documents</h3>
+          <button onClick={onClose} className="w-7 h-7 rounded-full hover:bg-[#1C3829]/5 flex items-center justify-center text-[#1C3829]/40 hover:text-[#1C3829] transition-colors text-lg">&times;</button>
+        </div>
+
+        <div className="p-6">
+          {/* Existing docs */}
+          {docs.length > 0 && (
+            <div className="space-y-2 mb-6">
+              {docs.map((doc) => (
+                <div key={doc.id} className="flex items-center gap-3 bg-[#1C3829]/5 rounded-xl px-4 py-3 group">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-[#1C3829]/35 flex-shrink-0">
+                    <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+                    <path d="M14 3v6h6" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+                  </svg>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-[#1a2b20] truncate">{doc.title}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[9px] bg-[#1C3829]/8 text-[#1C3829]/50 px-1.5 py-0.5 rounded">{doc.doc_type}</span>
+                      <span className="text-[9px] text-[#7A8F82]">{formatFileSize(doc.file_size)}</span>
+                    </div>
+                  </div>
+                  <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
+                    className="w-6 h-6 rounded-md hover:bg-[#1C3829]/10 flex items-center justify-center text-[#1C3829]/30 hover:text-[#1C3829] transition-colors opacity-0 group-hover:opacity-100">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/></svg>
+                  </a>
+                  <button onClick={() => handleDelete(doc.id)}
+                    className="w-6 h-6 rounded-md hover:bg-red-50 flex items-center justify-center text-[#1C3829]/20 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                    <span className="text-lg leading-none">&times;</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload form */}
+          <form onSubmit={handleUpload} className="space-y-3">
+            <p className="text-xs font-semibold text-[#1C3829]/40 tracking-wider uppercase">Add document</p>
+
+            <div className="flex flex-wrap gap-1.5">
+              {tripDocTypes.map((t) => (
+                <button key={t.value} type="button" onClick={() => setDocType(t.value)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    docType === t.value ? 'bg-[#1C3829] text-[#F5EFE0]' : 'bg-[#1C3829]/5 text-[#1C3829]/50 hover:bg-[#1C3829]/10'
+                  }`}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Document title (optional)" className={inputClass} />
+
+            {file ? (
+              <div className="flex items-center gap-3 bg-[#1C3829]/5 rounded-xl px-4 py-3">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-[#1C3829]/35"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/><path d="M14 3v6h6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>
+                <span className="text-xs text-[#1a2b20] truncate flex-1">{file.name}</span>
+                <button type="button" onClick={() => { setFile(null); fileRef.current.value = '' }} className="text-[#1C3829]/30 hover:text-red-500 text-lg">&times;</button>
+              </div>
+            ) : (
+              <>
+                <input ref={fileRef} type="file" accept="image/*,.pdf,.doc,.docx" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                <button type="button" onClick={() => fileRef.current?.click()}
+                  className="w-full border-2 border-dashed border-[#1C3829]/15 rounded-xl py-3 flex items-center justify-center gap-2 hover:border-[#1C3829]/30 hover:bg-[#1C3829]/3 transition-all">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-[#1C3829]/30"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <span className="text-xs text-[#1C3829]/40 font-medium">Choose file</span>
+                </button>
+              </>
+            )}
+
+            {error && <p className="text-xs text-red-500">{error}</p>}
+
+            <button type="submit" disabled={uploading || !file} className="w-full btn-primary py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+              {uploading ? 'Uploading...' : 'Upload'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ── Invite & Members Modal ── */
 function InviteModal({ open, onClose, trip, members, userId, onMembersChanged }) {
   const [tab, setTab] = useState('members') // 'members' | 'invite'
@@ -4368,6 +4518,8 @@ export default function Trip() {
   const [editItem, setEditItem] = useState(null)
   const [detailItem, setDetailItem] = useState(null)
   const [showInvite, setShowInvite] = useState(false)
+  const [showTripDocs, setShowTripDocs] = useState(false)
+  const [tripDocs, setTripDocs] = useState([])
   const [dayLocations, setDayLocations] = useState({})
   const [daySummaries, setDaySummaries] = useState({})
   const [dayNotes, setDayNotes] = useState({})
@@ -4438,6 +4590,15 @@ export default function Trip() {
     }
 
     setItems(allItems)
+
+    // Fetch trip documents
+    const { data: docs } = await supabase
+      .from('trip_documents')
+      .select('*')
+      .eq('trip_id', id)
+      .order('created_at', { ascending: false })
+    setTripDocs(docs || [])
+
     setLoading(false)
   }
 
@@ -4575,6 +4736,23 @@ export default function Trip() {
               </div>
               <span className="text-xs text-[#7A8F82] group-hover:text-[#1C3829] transition-colors">
                 {members.length} {members.length === 1 ? 'traveler' : 'travelers'}
+              </span>
+            </div>
+          </div>
+
+          {/* Trip documents */}
+          <div
+            onClick={() => setShowTripDocs(true)}
+            className="cursor-pointer group"
+          >
+            <p className="text-[10px] font-medium text-[#1C3829]/40 tracking-wider uppercase mb-1">Documents</p>
+            <div className="flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-[#1C3829]/30 group-hover:text-[#1C3829] transition-colors">
+                <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+                <path d="M14 3v6h6" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+              </svg>
+              <span className="text-xs text-[#7A8F82] group-hover:text-[#1C3829] transition-colors">
+                {tripDocs.length} {tripDocs.length === 1 ? 'file' : 'files'}
               </span>
             </div>
           </div>
@@ -5106,6 +5284,15 @@ export default function Trip() {
         city={weatherDetail?.city}
         dateStr={weatherDetail?.dateStr}
         useFahrenheit={useFahrenheit}
+      />
+
+      <TripDocsModal
+        open={showTripDocs}
+        onClose={() => setShowTripDocs(false)}
+        tripId={id}
+        userId={user?.id}
+        docs={tripDocs}
+        onChanged={() => fetchTrip()}
       />
 
       <InviteModal

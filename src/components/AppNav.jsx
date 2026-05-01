@@ -30,17 +30,29 @@ export default function AppNav({ backTo, showFriends = false }) {
       </div>
       <div className="flex items-center gap-4">
         {showFriends && (
-          <Link
-            to="/friends"
-            className="flex items-center gap-1.5 text-sm text-[#1C3829]/50 hover:text-[#1C3829] transition-colors"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-              <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-              <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.8"/>
-              <path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
-            Friends
-          </Link>
+          <>
+            <Link
+              to="/vault"
+              className="flex items-center gap-1.5 text-sm text-[#1C3829]/50 hover:text-[#1C3829] transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                <path d="M12 2l8 4v6c0 5.25-3.5 8.5-8 10-4.5-1.5-8-4.75-8-10V6l8-4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Vault
+            </Link>
+            <Link
+              to="/friends"
+              className="flex items-center gap-1.5 text-sm text-[#1C3829]/50 hover:text-[#1C3829] transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.8"/>
+                <path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+              Friends
+            </Link>
+          </>
         )}
         <Link
           to="/profile"

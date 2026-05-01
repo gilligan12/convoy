@@ -9,6 +9,7 @@ import Friends from './pages/Friends'
 import Profile from './pages/Profile'
 import UserProfile from './pages/UserProfile'
 import JoinTrip from './pages/JoinTrip'
+import Vault from './pages/Vault'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -34,6 +35,7 @@ function AppRoutes() {
       <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
       <Route path="/u/:username" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
       <Route path="/join/:token" element={<PrivateRoute><JoinTrip /></PrivateRoute>} />
+      <Route path="/vault" element={<PrivateRoute><Vault /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
