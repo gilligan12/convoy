@@ -4519,6 +4519,7 @@ export default function Trip() {
   const [detailItem, setDetailItem] = useState(null)
   const [showInvite, setShowInvite] = useState(false)
   const [showTripDocs, setShowTripDocs] = useState(false)
+  const [showCalSync, setShowCalSync] = useState(false)
   const [tripDocs, setTripDocs] = useState([])
   const [dayLocations, setDayLocations] = useState({})
   const [daySummaries, setDaySummaries] = useState({})
@@ -4738,6 +4739,21 @@ export default function Trip() {
                 {members.length} {members.length === 1 ? 'traveler' : 'travelers'}
               </span>
             </div>
+          </div>
+
+          {/* Calendar sync */}
+          <div>
+            <p className="text-[10px] font-medium text-[#1C3829]/40 tracking-wider uppercase mb-1">Calendar</p>
+            <button
+              onClick={() => setShowCalSync(true)}
+              className="flex items-center gap-1.5 group"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-[#1C3829]/30 group-hover:text-[#1C3829] transition-colors">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.6"/>
+                <path d="M3 10h18M8 2v4M16 2v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+              </svg>
+              <span className="text-xs text-[#7A8F82] group-hover:text-[#1C3829] transition-colors">Sync</span>
+            </button>
           </div>
 
           {/* Trip documents */}
@@ -5285,6 +5301,78 @@ export default function Trip() {
         dateStr={weatherDetail?.dateStr}
         useFahrenheit={useFahrenheit}
       />
+
+      {/* Calendar Sync Modal */}
+      {showCalSync && trip && (() => {
+        const calUrl = `${window.location.origin}/api/calendar?token=${trip.invite_token}`
+        const googleUrl = `https://calendar.google.com/calendar/r?cid=webcal://${window.location.host}/api/calendar?token=${trip.invite_token}`
+        const webcalUrl = calUrl.replace('https://', 'webcal://').replace('http://', 'webcal://')
+        const copied = { current: false }
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6" onClick={(e) => { if (e.target === e.currentTarget) setShowCalSync(false) }}>
+            <div className="bg-white rounded-2xl max-w-sm w-full shadow-2xl border border-[#1C3829]/10 overflow-hidden">
+              <div className="p-6 border-b border-[#1C3829]/8 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-[#1a2b20]" style={{ fontFamily: "'Playfair Display', serif" }}>Sync to Calendar</h3>
+                <button onClick={() => setShowCalSync(false)} className="w-7 h-7 rounded-full hover:bg-[#1C3829]/5 flex items-center justify-center text-[#1C3829]/40 hover:text-[#1C3829] transition-colors text-lg">&times;</button>
+              </div>
+              <div className="p-6 space-y-4">
+                <p className="text-xs text-[#4A6356] leading-relaxed">
+                  Subscribe to this calendar and your itinerary will automatically stay in sync when items are added or changed.
+                </p>
+
+                {/* Apple Calendar */}
+                <a
+                  href={webcalUrl}
+                  className="w-full flex items-center gap-3 border border-[#1C3829]/10 rounded-xl px-4 py-3 hover:bg-[#1C3829]/3 transition-colors"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-[#1C3829]/50 flex-shrink-0">
+                    <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.6"/>
+                    <path d="M3 10h18M8 2v4M16 2v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                    <path d="M9 15l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-[#1a2b20]">Apple Calendar</p>
+                    <p className="text-[10px] text-[#7A8F82]">Opens directly in Calendar app</p>
+                  </div>
+                </a>
+
+                {/* Google Calendar */}
+                <a
+                  href={googleUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center gap-3 border border-[#1C3829]/10 rounded-xl px-4 py-3 hover:bg-[#1C3829]/3 transition-colors"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-[#1C3829]/50 flex-shrink-0">
+                    <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.6"/>
+                    <path d="M3 10h18M8 2v4M16 2v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                    <circle cx="12" cy="15" r="2" stroke="currentColor" strokeWidth="1.4"/>
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-[#1a2b20]">Google Calendar</p>
+                    <p className="text-[10px] text-[#7A8F82]">Subscribe in Google Calendar</p>
+                  </div>
+                </a>
+
+                {/* Copy URL */}
+                <div className="pt-2 border-t border-[#1C3829]/8">
+                  <p className="text-[10px] text-[#1C3829]/30 mb-2">Or copy the calendar URL for any other app:</p>
+                  <div className="flex gap-2">
+                    <input type="text" value={calUrl} readOnly className="flex-1 border border-[#1C3829]/15 rounded-xl px-3 py-2 text-[10px] bg-[#F5EFE0]/50 text-[#1C3829]/50 truncate" />
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(calUrl) }}
+                      className="btn-primary px-3 rounded-xl text-xs font-semibold flex-shrink-0"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       <TripDocsModal
         open={showTripDocs}
